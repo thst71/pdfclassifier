@@ -1,0 +1,23 @@
+usage: pdfclassify.py [-h] --pdf-in PDF_IN --pdf-out PDF_OUT [--move] [--copy]
+                      [--dry-run] [--force] [--results]
+                      [--results-name RESULTS_NAME] [--features]
+                      [--features-name-fmt FEATURES_NAME_FMT]
+
+Classify PDF files.
+
+options:
+  -h, --help            show this help message and exit
+  --pdf-in PDF_IN       Folder of PDFs to classify
+  --pdf-out PDF_OUT     Folder to move classified PDFs to
+  --move                Move PDFs to the output folder
+  --copy                Copy PDFs to the output folder
+  --dry-run             Do a dry run, neither copy nor move are executed,
+                        results and features are written, though
+  --force               Force overwrite of existing data files
+  --results             Write a results.csv file
+  --results-name RESULTS_NAME
+                        Name of the results.csv file
+  --features            Write a features.csv file
+  --features-name-fmt FEATURES_NAME_FMT
+                        format string for the feature file, use {pdf_name} for
+                        the name of the accompanying pdf

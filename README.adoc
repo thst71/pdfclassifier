@@ -1,0 +1,295 @@
+= PDF Classifier
+
+This project is a Python-based tool designed to process and classify PDF documents. It extracts text from PDFs using OCR (Optical Character Recognition), leverages a Large Language Model (LLM) to identify key information, and then renames the PDFs based on the extracted metadata.
+
+== Features
+
+*   **PDF Processing:** Converts PDF files into images, extracts text using Tesseract OCR, and stores the extracted data.
+*   **LLM-Based Classification:** Uses Google's Gemini LLM to analyze the extracted text and identify key information such as document date, document type, sender, and invoice number.
+*   **Intelligent Renaming:** Renames PDF files based on the extracted metadata, creating a structured and informative naming convention.
+*   **Data Management:** Loads and manages classification data from CSV files.
+*   **Robust Error Handling:** Includes error handling for PDF processing, OCR, and LLM interactions.
+*   **Testability:** Comes with a comprehensive suite of unit tests to ensure code quality and prevent regressions.
+
+== Requirements
+
+*   Python 3.10+
+* Code dependencies are listed in link:requirements.txt[] (see installation)
+
+.Dependencies: `requirements.txt`
+[properties]
+----
+include::requirements.txt[]
+----
+*   Tesseract OCR Engine (version 4.1.0 or higher recommended)
+*   A Google API key (for using the Gemini LLM)
+
+== Installation
+
+This section describes how to install and set up the PDF Classifier project.
+
+=== Prerequisites
+
+*   Python 3.10 or higher
+*   Git (for cloning the repository)
+*   Tesseract OCR Engine (version 4.1.0 or higher recommended)
+*   A Google API key (for using the Gemini LLM)
+
+=== Steps
+
+1.  **Clone the repository:**
+
+ git clone <repository-url> cd pdfclassifier
+
+2.  **Create a virtual environment (recommended):**
+
+ python3 -m venv venv source venv/bin/activate      # On Linux/macOS
+ python3 -m venv venv source venv\Scripts\activate  # On Windows
+
+
+3.  **Install the Python dependencies:**
+
+ pip install -r requirements.txt
+
+4.  **Install Tesseract OCR:**
+
+*   **Linux:**
+
+ bash sudo apt-get update sudo apt-get install tesseract-ocr sudo apt-get install libtesseract-dev
+
+* **MacOS**
+
+ brew install tesseract tesseract-lang
+
+
+*   **Windows:** Download the installer from the official Tesseract OCR website and follow the installation instructions.
+
+5.  **Set up the environment variables:**
+
+*   Run the `env-make.sh` script to create a `.env` file and set the `GOOGLE_API_KEY` and `TESSDATA_PREFIX` environment variables:
+
+ bash env-make.sh
+
+* This script will prompt you to enter your `GOOGLE_API_KEY`.
++
+NOTE: The `TESSDATA_PREFIX` is set to `/Users/thst/homebrew/Cellar/tesseract-lang/4.1.0/share/tessdata` in the `env-make.sh` script. If you installed Tesseract in a different location, you need to adjust this path in the script.
+
+6.  **Activate the environment variables:**
+
+* Source the `.env` file to activate the environment variables:
+
+ source .env
++
+The application will load the `.env` file on startup.
+
+=== Notes
+
+
+### Notes
+
+*   **Virtual Environments:** Using a virtual environment is highly recommended to isolate the project's  dependencies from other projects and from the system's Python installation.
+*   **Tesseract OCR:** Make sure that the `tesseract` command is available in your system's PATH after installation. You can test this by running `tesseract --version` in your terminal.
+*   **Google API Key:** You can obtain a Google API key from the Google Cloud Console. The Gemini API keys can specifically be obtained through Google AI studio here: link:https://aistudio.google.com/app/apikey[]
+*   **Replace Placeholders:** Remember to replace `<repository-url>` with your actual repository URL.
+
+== How it works
+
+The PDF Classifier project provides a set of modules within the `src/python/classifier` directory that can be used to build a larger application for processing, classifying, and renaming PDF documents. The core modules are:
+
+*   **`data.py`:** Handles data loading and management, including reading and writing CSV files.
+*   **`llm_classifier.py`:** Contains the logic for using the Gemini LLM to analyze text and extract key information.
+*   **`pdfprocessor.py`:** Contains the logic for processing PDF files, extracting images, and performing OCR.
+*   **`renamer.py`:** Contains the logic for renaming PDF files based on extracted metadata.
+
+These modules are designed to be used together within a larger application, not as standalone scripts.
+
+=== Intended Workflow
+
+The intended workflow for using the PDF Classifier modules is as follows:
+
+1.  **PDF Processing:** Use the `pdfprocessor.py` module to process PDF files in a folder, extract images from each page, and then extract text from each image using Tesseract OCR. The extracted text is stored in temporary CSV files.
+2.  **LLM-Based Classification:** Use the `llm_classifier.py` module to analyze the extracted text from the temporary CSV files. It extracts key information such as document date, document type, sender, and invoice number. The extracted information is stored in a pandas DataFrame.
+3.  **Intelligent Renaming:** Use the `renamer.py` module to rename the PDF files based on the extracted metadata. It reads the classification data from a CSV file and applies the extracted information to rename the PDF files.
+
+=== Example Usage (Conceptual)
+
+* Initialize a LLM with model and your API-key
++
+[source,python,indent=0]
+----
+include::src/python/pdfclassify.py[tag=main-method-init-llm]
+----
+
+* Run the PDF processing on the input files. This creates temporary files and data files. If you do not cleanup, you can use the files in a detached run later.
++
+[source,python,indent=0]
+----
+include::src/python/pdfclassify.py[tag=main-method-process-pdf]
+----
+
+* The PDF processing produces a list of `PdfData` structures that collect the generated image files and the tesseract OCR data files. For convenience the OCR data is also included in memory.
++
+The next step is creating features on the files using the LLM. Since PDFs are split into pages, the naive use is to find the page with the best average on the feature quality.
++
+[source,python,indent=0]
+----
+include::src/python/pdfclassify.py[tag=main-method-loop-features]
+----
+
+* The LLM part yields a feature per PDF, here collected in a `features_list`. In the next step, the feature data is converted to `FileData` to start the renaming. Sanitize the data for filename use.
++
+[source,python,indent=0]
+----
+include::src/python/pdfclassify.py[tag=main-method-sanitize-data]
+----
+
+* The sanitized list of `FileData` objects can now be injected into the renamer module to finally rename the PDFs
++
+[source,python,indent=0]
+----
+include::src/python/pdfclassify.py[tag=main-method-classify-pdf]
+----
+
+=== Calling the script
+
+The functionality is collected in a commandline utility called `pdfclassify.py`. The script has a commandline help that can be called with `--help`:
+
+[source,python,indent=0]
+----
+include::src/doc/help.txt[]
+----
+
+NOTE: When changing the command arguments during development, call the `update-help.sh` script to update the documentation.
+
+The application will try to use data found at the `--pdf-out`-location if it newer than the accompanied PDF. If you want to overwrite the intermediate files, set the `--force` flag.
+
+The `--dry-run` flag will do all processing but not copy or move the PDF.
+
+==== Example commandline
+
+.classify PDF from pdf folder and copy the renamed files to pdf-out folder. Keep features and results.
+ python pdfclassify.py \
+        --pdf-in /location/of/scanned/pdf \
+        --pdf-out /target/location/of/classified/files \
+        --copy \
+        --results \
+        --features
+
+.classify PDF from pdf folder and move the renamed files to pdf-out folder. Overwrite existing files and do not recover a previous run.
+ python pdfclassify.py \
+        --pdf-in /location/of/scanned/pdf \
+        --pdf-out /target/location/of/classified/files \
+        --move \
+        --force
+
+.classify PDF from pdf folder and move the renamed files to pdf-out folder. Overwrite existing files and do not recover a previous run. Do not execute the final move.
+ python pdfclassify.py \
+        --pdf-in /location/of/scanned/pdf \
+        --pdf-out /target/location/of/classified/files \
+        --move \
+        --force \
+        --dry-run
+
+=== The files in the work folder
+
+The PDF processor creates a folder `work.d` in the `--pdf-out` folder. For each PDF consumed from `--pdf-in`, a folder with the basename of the pdf is created.
+
+.name and contents of the work folder per PDF processed
+|====
+|PDF read| `SCAN-0001.pdf`
+|Work folder| `<pdf-out>/work.d/SCAN-0001/`
+|Data files| `<pdf-out>/work.d/SCAN-0001/page_<page#>.csv` for each page, `page#` starts with `1`
+|Image files| `<pdf-out>/work.d/SCAN-0001/page_<page#>.png` for each page, `page#` starts with `1`
+|====
+
+=== The feature csv files
+
+If the flag `--features` is set, the results from the LLM are writen to a file in the `--pdf-out` folder. The name can be defined using the `--features-name-fmt` setting. The placeholder `{pdf_name}` can be used in the format to use the source-pdf name in the feature-file-name.
+
+The default feature file name is `{pdf_name}-feature.csv`
+
+.Contents of a feature csv
+[%header,format=csv]
+|====
+key,value,quality
+id,/Volumes/scans/SCAN_0001.pdf,1.0
+Document Date,2022-08-01,1.0
+Document Type,rechnung,1.0
+Sender,OTTO,1.0
+Invoice Number,A-BC-0004711,1.0
+|====
+
+If using the pdfprocessor class, the feature is a pandas DataFrame object.
+
+The script collects all features produced by the LLM in the file `all-features.csv`. The file is only written if `--features` is set.
+
+=== The results.csv
+
+The features are further processed into a renaming table, the `results.csv`.
+
+The results must have the following columns.
+
+*   `scanfile`: The name of the PDF file.
+*   `docdate`: The document date in `YYYY-MM-DD` format.
+*   `doctype`: The document type (e.g., "invoice", "account statement", "other").
+*   `sendername`: The name of the sender.
+*   `docid`: The document ID (e.g., invoice number, account number).
+*   `receivername`: The name of the receiver.
+*   `dateoffile`: The date of the file in `YYYY-MM-DD` format.
+*   `extension`: The file extension (e.g., "pdf").
+
+The `scanfile` is the name of the PDF in the `--pdf-in` folder. It is used to copy or move the file to the filename constructed from the remaining fields.
+
+=== Recovery or restart
+
+The script searches for the files needed to continue processing before the actual processing starts. If the files are found and the source PDF is changed after the data file has been created or the force flag is set, the script will reconstruct the data from the previous run and use it.
+
+In theory, you can stop the script at any time and restart it. It should continue where it has left the process and will not run the LLM on files where a valid feature.csv is present. It will call pdf2images, though, on all PDF, but the images will not be written if they already exist. Subsequently OCR will not happen, if not forced, given the OCR results are already there and fresh.
+
+The logging is quite comprehensive when a file is used instead of producing data.
+
+== Building the software
+
+=== Prerequisites
+
+*   Python 3.10+
+*   Git
+*   Tesseract OCR Engine
+*   A Google API key
+
+=== Project structure
+
+There are no build steps defined. You can start to hack away immediatly
+
+----
+pdfclassifier/
+├─ requirements.txt                 # Project dependencies
+├─ update-help.sh                   # Script to create the src/doc/help.txt
+├─ env-make.sh                      # Script to create the .env file
+├─ src/
+│   ├─ doc/
+│   │   └─ help.txt                 # rendered --help output for docs
+│   ├─ python/
+│   │   ├─ classifier/
+│   │   │   ├─ init.py
+│   │   │   ├─ data.py              # Data loading and management
+│   │   │   ├─ llm_classifier.py    # LLM-based classification
+│   │   ├   ├─ pdfprocessor.py      # PDF processing and OCR
+│   │   │   └─ renamer.py           # PDF renaming
+│   │   └─ pdfclassify.py           # the classification application
+│   └─ test/
+│       └─ python/
+│           ├─ init.py
+│           ├─ test_data.py         # Unit tests for data.py
+│           ├─ test_pdfprocessor.py # Unit tests for pdfprocessor.py
+│           └─ test_renamer.py      # Unit tests for renamer.py
+└─ README.adoc                      # This file
+----
+
+=== Contributing
+
+Feel free to fork the application if you want to contribute. Forks are welcome, please adhere to the license.
+
+As you might have noticed, there is a lot of German used, this application is created for my own needs and if you want new features and have ideas, pull requests are welcome.
+
+The application solves a real world problem for me and is an interesting experiment to use LLMs in something more useful than generating memes.

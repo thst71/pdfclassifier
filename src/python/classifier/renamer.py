@@ -125,3 +125,6 @@ def sanitize_filename_data(raw_filename_data: dict[str, FileData]) -> dict[str, 
 
     return sanitized_data
 
+if __name__ == "__main__":
+    print("This is module - use the pdfclassify.py script as entry point")
+    exit(-1)

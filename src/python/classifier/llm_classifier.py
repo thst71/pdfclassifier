@@ -139,3 +139,7 @@ class LLMDataExtractor:
 
         df = pd.DataFrame(data)
         return df
+
+if __name__ == "__main__":
+    print("This is module - use the pdfclassify.py script as entry point")
+    exit(-1)

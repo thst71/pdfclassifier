@@ -91,3 +91,7 @@ def load_classification_data(csv_file: Path) -> dict[str, FileData]:
             else:
                 print(f"{row_obj.id} is not complete")
     return data
+
+if __name__ == "__main__":
+    print("This is module - use the pdfclassify.py script as entry point")
+    exit(-1)
