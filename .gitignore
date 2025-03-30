@@ -1,2 +1,6 @@
 /.venv/
 .env
+/src/python/__pycache__
+/src/python/classifier/__pycache__
+*.pyc
+.DS_Store
