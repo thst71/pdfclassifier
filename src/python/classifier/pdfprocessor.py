@@ -151,24 +151,5 @@ class PdfProcessor:
         shutil.rmtree(self.temp_base_dir, ignore_errors=True)
 
 if __name__ == "__main__":
-    # Configure logging
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-    # Create a PdfProcessor
-    processor = PdfProcessor()
-
-    # Process all PDFs in a folder
-    pdf_folder = Path("path/to/your/pdf/folder")  # Replace with your folder
-    pdf_data_list = processor.process_pdfs(pdf_folder, do_force)
-
-    # Iterate through the results
-    for pdf_data in pdf_data_list:
-        logging.info(f"Processed PDF: {pdf_data.pdf_file}")
-        for image_file in pdf_data.image_files:
-            logging.info(f"  Image: {image_file}")
-        for data_file in pdf_data.data_files:
-            logging.info(f"  Data: {data_file}")
-        pdf_data.cleanup()
-
-    # Clean up the temporary base directory
-    processor.cleanup()
+    print("This is module - use the pdfclassify.py script as entry point")
+    exit(-1)
