@@ -1,11 +1,12 @@
-import unittest
-from unittest.mock import patch, MagicMock, mock_open
 import shutil
 import tempfile
+import unittest
 from pathlib import Path
+from unittest.mock import patch, MagicMock, PropertyMock
+
 import pandas as pd
+
 from classifier.pdfprocessor import PdfProcessor, PdfData
-import os
 
 
 class TestPdfData(unittest.TestCase):
@@ -114,15 +115,19 @@ class TestPdfProcessor(unittest.TestCase):
             f.write("dummy pdf content")
 
     def tearDown(self):
-        shutil.rmtree(self.temp_base_dir)
+        shutil.rmtree(self.temp_base_dir, ignore_errors=True)
 
-    @patch("classifier.pdfprocessor.PdfData.extract_images")
-    @patch("classifier.pdfprocessor.PdfData.extract_text")
-    def test_process_pdf(self, mock_extract_text, mock_extract_images):
+    @patch("classifier.pdfprocessor.PdfData")
+    def test_process_pdf(self, mock_data):
+        mock_data.return_value = mm_pdf_data = MagicMock()
+        mm_pdf_data.data_files = ["one"]
+        mm_pdf_data.extract_text = MagicMock()
+        mm_pdf_data.extract_images = MagicMock()
+
         pdf_data = self.pdf_processor.process_pdf(self.pdf_file)
         self.assertIsNotNone(pdf_data)
-        mock_extract_images.assert_called_once()
-        mock_extract_text.assert_called_once()
+        mm_pdf_data.extract_images.assert_called_once()
+        mm_pdf_data.extract_text.assert_called_once()
 
     def test_process_pdf_not_found(self):
         pdf_data = self.pdf_processor.process_pdf(self.pdf_folder / "not_found.pdf")
