@@ -11,7 +11,7 @@ from classifier.renamer import *
 
 load_dotenv()
 
-print(os.environ.items())
+logging.debug(os.environ.items())
 
 PROJECT_ROOT=Path(os.getenv("PROJECT_ROOT", "."))
 
@@ -45,7 +45,6 @@ def parse_cmdline():
     return args
 
 
-
 def main():
     """
     Main function to classify PDF files.
@@ -72,9 +71,12 @@ def main():
     if execute_move and execute_copy :
         logging.error("can either move or copy, not both, use --copy or --move, not both")
         exit(-1)
-
+# tag::main-method-init-llm[]
     llm_c = LLMDataExtractor(api_key=os.getenv("GOOGLE_API_KEY"), model_name="gemini-2.0-flash-lite")
+# end::main-method-init-llm[]
+# tag::main-method-process-pdf[]
     pdf_data_list = PdfProcessor(target_workdir, do_force).process_pdfs(pdf_path)
+# end::main-method-process-pdf[]
     features_list = []
 
     _features_changed = False
@@ -92,6 +94,7 @@ def main():
 
         _features_changed = True
 
+# tag::main-method-loop-features[]
         best_avg = 0.0
         best = None
         for data in pdf_data.data:
@@ -100,6 +103,7 @@ def main():
             if features_avg > best_avg :
                 best = features
                 best_avg = features_avg
+# end::main-method-loop-features[]
 
         if best is not None:
             pdf_id_row = pd.DataFrame({'key':['id'], 'value':[pdf_data.pdf_file.absolute()], 'quality':[1.0]})
@@ -121,8 +125,10 @@ def main():
             logging.info(f"Writing features compilation to {target_base} / all-features.csv")
             features_df.to_csv(target_base / "all-features.csv", index=True, header=True)
 
+# tag::main-method-sanitize-data[]
     classification_data = {feat.loc["id", "value"]: FileData().init_from_features(feat) for feat in features_list}
     sanitized_data = sanitize_filename_data(classification_data)
+# end::main-method-sanitize-data[]
     if write_results :
         logging.info(f"Writing results to {results_file}")
         sanitized_data_list = [vars(v) for v in sanitized_data.values()]
@@ -130,6 +136,7 @@ def main():
                      columns = ['docdate', 'doctype', 'sendername', 'docid', 'receivername', 'dateoffile', 'extension', 'id']
                      ).to_csv(results_file, index=False)
 
+# tag::main-method-classify-pdf[]
     for name, _file_data in sanitized_data.items():
         new_path = classify_pdf(_file_data, target_base)
         if new_path:
@@ -138,6 +145,7 @@ def main():
             if execute_copy: copy_file(_file_data.id, new_path, verbose=1, dry_run=do_dry_run )
         else:
             print(f"No classification data found for: {_file_data.id}")
+# end::main-method-classify-pdf[]
 
 if __name__ == "__main__":
     main()
