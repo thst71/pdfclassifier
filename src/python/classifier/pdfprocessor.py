@@ -43,7 +43,8 @@ class PdfData:
             if os.path.getmtime(self.temp_dir) < self._mtime_of_pdf or force:
                 logging.warning(f"removing existing workfolder {self.temp_dir}")
                 self.cleanup()
-        else:
+        # make sure, the temp folder exists, we need to check again, because it might have been cleaned up
+        if not self.temp_dir.exists():
             self.temp_dir.mkdir(parents=True, exist_ok=True)
 
     def _is_overwrite(self, check_file: Path):
