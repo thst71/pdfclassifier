@@ -55,7 +55,8 @@ class FileData :
         # if the quality score is <=0.9, should append the score in the value field in square brackets
         for key in ["Document Date", "Document Type", "Sender", "Invoice Number"]:
             if features.loc[key, "quality"] < 0.9:
-                features.loc[key, "value"] = f"{features.loc[key, 'value']}[{features.loc[key, 'quality']}]"
+                feat_value = features.loc[key, "value"] or "unknown"
+                features.loc[key, "value"] = f"{feat_value}[{features.loc[key, 'quality']}]"
 
         self.id = features.loc["id", "value"]
         self.docdate = features.loc["Document Date", "value"] or "unknown"
