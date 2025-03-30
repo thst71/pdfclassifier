@@ -1,8 +1,10 @@
 import unittest
-from unittest.mock import patch
 from pathlib import Path
-from classifier.data import FileData, load_classification_data
+from unittest.mock import patch
+
 import pandas as pd
+
+from classifier.data import FileData, load_classification_data
 
 
 class TestFileData(unittest.TestCase):
@@ -121,7 +123,8 @@ class TestLoadClassificationData(unittest.TestCase):
         self.assertEqual(data["test.pdf"].extension, "pdf")
 
     @patch("builtins.open", new_callable=unittest.mock.mock_open,
-           read_data="scanfile,docdate,doctype,sendername,docid,receivername,dateoffile,extension\ntest.pdf,2023-01-01,invoice,Test Sender,123,,2023-01-02,pdf")
+           # this read_data result misses one column in the middle and so one field is None.
+           read_data="scanfile,docdate,doctype,sendername,docid,receivername,dateoffile,extension\ntest.pdf,2023-01-01,invoice,Test Sender,123,2023-01-02,pdf")
     def test_load_classification_data_incomplete(self, mock_open):
         data = load_classification_data(Path("test.csv"))
         self.assertNotIn("test.pdf", data)

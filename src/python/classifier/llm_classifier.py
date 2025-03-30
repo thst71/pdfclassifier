@@ -1,12 +1,10 @@
-import datetime
 import logging
-import time
-
-import pandas as pd
-import google.generativeai as genai
-from typing import List, Tuple
 import os
 import re
+import time
+
+import google.generativeai as genai
+import pandas as pd
 
 # time between two calls in seconds
 THROTTLE_SECONDS = 2.0

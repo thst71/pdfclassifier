@@ -1,9 +1,7 @@
-import unittest
-from unittest.mock import patch
-from pathlib import Path
-import tempfile
 import shutil
-import os
+import tempfile
+import unittest
+from pathlib import Path
 
 from classifier.renamer import (
     find_pdf_in,
@@ -15,7 +13,6 @@ from classifier.renamer import (
     REPLACE_CHAR
 )
 from classifier.data import FileData
-
 
 class TestRenamer(unittest.TestCase):
     def setUp(self):

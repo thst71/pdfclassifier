@@ -1,9 +1,10 @@
+import os
 import unittest
 from unittest.mock import patch, MagicMock
+
 import pandas as pd
+
 from classifier.llm_classifier import LLMDataExtractor
-import os
-import google.generativeai as genai
 
 
 class TestLLMDataExtractor(unittest.TestCase):

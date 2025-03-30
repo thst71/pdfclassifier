@@ -16,11 +16,10 @@ import tempfile
 from pathlib import Path
 from typing import List
 
+import pandas
+import pytesseract
 from PIL import Image
 from pdf2image import convert_from_path
-import pytesseract
-import pandas
-from pytesseract.pytesseract import cleanup
 
 
 class PdfData:

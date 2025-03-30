@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import csv
-from re import match
 from pathlib import Path
 from typing import Callable
 

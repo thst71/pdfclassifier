@@ -1,16 +1,13 @@
 import logging
 import os
 from distutils.file_util import move_file, copy_file
-from pyexpat import features
-from tempfile import gettempdir
 
 import pandas as pd
 from dotenv import load_dotenv
 
-from classifier.data import load_classification_data
-from classifier.renamer import *
 from classifier.llm_classifier import LLMDataExtractor
 from classifier.pdfprocessor import PdfProcessor
+from classifier.renamer import *
 
 load_dotenv()
 
