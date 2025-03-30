@@ -41,7 +41,7 @@ class PdfData:
         if self.temp_dir.exists() :
             # check if the tmp folder is older than the pdf_file or force is true
             if os.path.getmtime(self.temp_dir) < self._mtime_of_pdf or force:
-                logging.warn(f"removing existing workfolder {self.temp_dir}")
+                logging.warning(f"removing existing workfolder {self.temp_dir}")
                 self.cleanup()
         else:
             self.temp_dir.mkdir(parents=True, exist_ok=True)

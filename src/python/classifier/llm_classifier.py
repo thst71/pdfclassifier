@@ -134,7 +134,7 @@ class LLMDataExtractor:
                 logging.debug(f"skipping line: {line}")
 
         if len(data) != 4:
-            logging.warn(f"received invalid response: {response_text}")
+            logging.warning(f"received invalid response: {response_text}")
             return pd.DataFrame(
                     {"key": valid_keys, "value": [""] * len(valid_keys), "quality": [0.1] * len(valid_keys)},
                     columns=["key", "value", "quality"])
